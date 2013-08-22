@@ -20,6 +20,7 @@ Configration
 
 対象となる画像形式は次の通り
 
+* bmp (拡張子が bmp, BMP)
 * jpeg (拡張子が jpg, jpeg, JPG)
 * png  (拡張子が png, PNG)
 

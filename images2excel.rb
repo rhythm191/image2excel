@@ -68,7 +68,7 @@ class Images2Excel
 		files = Hash.new
 	  Dir.glob(File.basename(dir) + '/*') do |f|
 	    # support: bmp, gif, jpeg, pbm, pcx, pgm, png, ppm, psd, swf, tiff, xbm, xpm
-	    if /.*?\.(jpg|jpeg|png|JPG|PNG)/ =~ f
+	    if /.*?\.(bmp|BMP|jpg|jpeg|png|JPG|PNG)/ =~ f
 	      if files.has_key? sheet_name(f) then
 	      	files[sheet_name(f)] << f
 	      else
