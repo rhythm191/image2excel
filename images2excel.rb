@@ -4,15 +4,17 @@
 require 'rubygems'
 require 'win32ole'
 require 'image_size'
+require 'yaml'
 
 
 
 class Images2Excel
 
-	IMAGE_SPCE = 50
-
-	def initialize
+	def initialize(width=0.65, height=0.65, space=50)
 		@sheet_counter = 1
+		@scale_width = width
+		@scale_height = height
+		@space = space
 	end
 
   
@@ -45,7 +47,7 @@ class Images2Excel
 	def file_size(filename)
 		open(filename, 'rb') do |f|
 		 	img = ImageSize.new(f.read)
-		 	return { width: img.get_width, height: img.get_height }
+		 	return { width: img.width, height: img.height }
 		end
 	end
 
@@ -58,9 +60,9 @@ class Images2Excel
 			true,
 			1,
 			@y,
-			size[:width],
-			size[:height])
-		@y += size[:height] + IMAGE_SPCE
+			size[:width] * @scale_width,
+			size[:height] * @scale_height)
+		@y += size[:height] + @space
 	end
 
 	### 対象ディレクトリから画像ファイルのリストを取得する
@@ -88,15 +90,18 @@ class Images2Excel
 end
 
 
+#yaml形式のconfig.ymlファイルを読み込む
+config = YAML.load_file("config.yml")['config']
+
 excel = WIN32OLE.new('Excel.Application')
 
 begin
 	book = excel.workbooks.add
 
-  i2e = Images2Excel.new
-  i2e.convert(book, "./img")
+  i2e = Images2Excel.new(config['scale']['width'], config['scale']['height'], config['space'])
+  i2e.convert(book, config['directory'])
 
-	book.saveAs File.expand_path("./export.xls")
+	book.saveAs File.expand_path(config['export'])
 ensure
 	excel.Workbooks.Close
   excel.quit

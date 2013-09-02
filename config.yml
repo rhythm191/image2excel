@@ -1,0 +1,9 @@
+# config file
+
+config:
+  directory: "./img"
+  export: "export.xls"
+  scale:
+    width: 0.65
+    height: 0.65
+  space: 50
