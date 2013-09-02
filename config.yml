@@ -1,7 +1,7 @@
 # config file
 
 config:
-  directory: "./img"
+  directory: "img"
   export: "export.xls"
   scale:
     width: 0.65

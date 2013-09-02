@@ -7,8 +7,8 @@ images2excel
 Configration
 --------
 
-* 対象となる画像群はimgディレクトリに格納する(オプションで変更可能)
-* エクスポートされるExcelファイルは"export.xls"(オプションで変更可能)
+* 対象となる画像群はimgディレクトリに格納する(config.ymlで変更可能)
+* エクスポートされるExcelファイルは"export.xls"(config.ymlで変更可能)
 
     .
     |-- images2excel.rb
@@ -23,6 +23,18 @@ Configration
 * bmp (拡張子が bmp, BMP)
 * jpeg (拡張子が jpg, jpeg, JPG)
 * png  (拡張子が png, PNG)
+
+
+Config File
+-----------
+
+config.ymlに動作の設定を記述する.
+次の設定値が存在する.
+
+* directory: 対象となる画像群の格納ディレクトリ(default: "img")
+* export: エクスポートされるExcel(default: "export.xls")
+* scale: 画像の拡大率(default: 0.65)
+* space: 同一シートに複数の画像を配置する場合の画像間のスペース(default: 50)
 
 
 
