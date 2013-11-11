@@ -62,7 +62,7 @@ class Images2Excel
 			@y,
 			size[:width] * @scale_width,
 			size[:height] * @scale_height)
-		@y += size[:height] + @space
+		@y += size[:height] * @scale_height + @space
 	end
 
 	### 対象ディレクトリから画像ファイルのリストを取得する
