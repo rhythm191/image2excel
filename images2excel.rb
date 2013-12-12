@@ -10,6 +10,9 @@ require 'yaml'
 
 class Images2Excel
 
+	CELL_WIDTH = 8.38
+	CELL_HEIGTH = 13.5
+
 	def initialize(width=0.65, height=0.65, space=50)
 		@sheet_counter = 1
 		@scale_width = width
@@ -19,14 +22,17 @@ class Images2Excel
 
   
 	def convert(book, dir)
-		get_images_hash(dir).each do |key, value|
+		files = get_images_hash(dir)
+		sheetnames = files.keys.sort_by {|x| x.split("-")[0].to_i }
+		sheetnames.each do |sheetname|
 
 	    # 貼り付けるシートを取得
 			sheet = get_next_sheet(book)
 
-			value.each do |f|
+			files[sheetname].each do |f|
 				basename = File.basename(f, '.*')
-				sheet.Name = sheet_name basename
+				sheet.Name = get_sheet_name basename
+				insert_comment(basename, sheet) if get_comment basename
 			  filepath = File.expand_path(f)
 			  insert_picture(filepath, sheet)
 			end
@@ -38,7 +44,7 @@ class Images2Excel
 		book.worksheets.add({ :after =>  book.sheets(book.sheets.count) }) if book.sheets.count < @sheet_counter
 		sheet = book.sheets[@sheet_counter]
 		@sheet_counter += 1
-		@y = 1
+		@y = CELL_HEIGTH
 
 		sheet
 	end
@@ -49,6 +55,13 @@ class Images2Excel
 		 	img = ImageSize.new(f.read)
 		 	return { width: img.width, height: img.height }
 		end
+	end
+
+  ### シートにコメントを挿入するメソッド
+	def insert_comment(filename, sheet)
+		celRow = ((@y - CELL_HEIGTH) /  CELL_HEIGTH).round + 1
+		cell = sheet.Cells.Item(celRow,1)
+		cell.Value = get_comment filename
 	end
 
 	### シートに画像を挿入するメソッド.
@@ -62,7 +75,7 @@ class Images2Excel
 			@y,
 			size[:width] * @scale_width,
 			size[:height] * @scale_height)
-		@y += size[:height] * @scale_height + @space
+		@y += size[:height] * @scale_height + @space + CELL_HEIGTH
 	end
 
 	### 対象ディレクトリから画像ファイルのリストを取得する
@@ -71,10 +84,10 @@ class Images2Excel
 	  Dir.glob(File.basename(dir) + '/*') do |f|
 	    # support: bmp, gif, jpeg, pbm, pcx, pgm, png, ppm, psd, swf, tiff, xbm, xpm
 	    if /.*?\.(bmp|BMP|jpg|jpeg|png|JPG|PNG)/ =~ f
-	      if files.has_key? sheet_name(f) then
-	      	files[sheet_name(f)] << f
+	      if files.has_key? get_sheet_name(f) then
+	      	files[get_sheet_name(f)] << f
 	      else
-	      	files[sheet_name(f)] = [f]
+	      	files[get_sheet_name(f)] = [f]
 	      end
 	    end
 	  end
@@ -82,9 +95,15 @@ class Images2Excel
 	end
 
   # ファイル名からシート名を取得
-	def sheet_name(filename)
+	def get_sheet_name(filename)
 		basename = File.basename(filename, '.*')
 		basename.split(".")[0]
+	end
+
+  # ファイル名からコメントを取得
+	def get_comment(filename)
+		/\.\_(.*)\.?/ =~ filename
+		$1
 	end
 
 end
