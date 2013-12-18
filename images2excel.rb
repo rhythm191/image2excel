@@ -44,7 +44,7 @@ class Images2Excel
 		book.worksheets.add({ :after =>  book.sheets(book.sheets.count) }) if book.sheets.count < @sheet_counter
 		sheet = book.sheets[@sheet_counter]
 		@sheet_counter += 1
-		@y = CELL_HEIGTH
+		@y = 1
 
 		sheet
 	end
@@ -58,10 +58,18 @@ class Images2Excel
 	end
 
   ### シートにコメントを挿入するメソッド
+  # コメントの分だけ@yを増加させる
 	def insert_comment(filename, sheet)
-		celRow = ((@y - CELL_HEIGTH) /  CELL_HEIGTH).round + 1
-		cell = sheet.Cells.Item(celRow,1)
-		cell.Value = get_comment filename
+		celRow = (@y /  CELL_HEIGTH).ceil
+		c_num = 0
+		comment = get_comment filename
+		comment.split('_').each do |c|
+			cell = sheet.Cells.Item(celRow + c_num, 1)
+		  cell.Value = c
+		  c_num += 1
+		end
+		
+		@y = ((@y /  CELL_HEIGTH).ceil + c_num - 1) * CELL_HEIGTH
 	end
 
 	### シートに画像を挿入するメソッド.
@@ -72,10 +80,10 @@ class Images2Excel
 			false,
 			true,
 			1,
-			@y,
+			@y, #(CELL_HEIGTH * ln_num).ceil,
 			size[:width] * @scale_width,
 			size[:height] * @scale_height)
-		@y += size[:height] * @scale_height + @space + CELL_HEIGTH
+		@y += size[:height] * @scale_height + @space
 	end
 
 	### 対象ディレクトリから画像ファイルのリストを取得する
@@ -121,6 +129,8 @@ begin
   i2e.convert(book, config['directory'])
 
 	book.saveAs File.expand_path(config['export'])
+	excel.Workbooks.Close
+  excel.quit
 ensure
 	excel.Workbooks.Close
   excel.quit
