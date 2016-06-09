@@ -1,8 +1,10 @@
 # config file
 
 config:
-  directory: "img"
-  export: "export.xls"
+  # image2excel.rb‚Å—˜—p
+  img_dir: "img"
+  csv_dir: "img"
+  export: "export.xlsx"
   scale:
     width: 0.65
     height: 0.65

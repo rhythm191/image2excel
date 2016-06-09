@@ -1,3 +1,4 @@
 /img*
+/csv*
 /export.xls
 /Gemfile.lock

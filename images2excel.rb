@@ -26,15 +26,15 @@ class Images2Excel
 		sheetnames = files.keys.sort_by {|x| x.split("-")[0].to_i }
 		sheetnames.each do |sheetname|
 
-	    # 貼り付けるシートを取得
+			# 貼り付けるシートを取得
 			sheet = get_next_sheet(book)
 
 			files[sheetname].each do |f|
 				basename = File.basename(f, '.*')
 				sheet.Name = get_sheet_name basename
 				insert_comment(basename, sheet) if get_comment basename
-			  filepath = File.expand_path(f)
-			  insert_picture(filepath, sheet)
+				filepath = File.expand_path(f)
+				insert_picture(filepath, sheet)
 			end
 		end
 	end
@@ -65,8 +65,8 @@ class Images2Excel
 		comment = get_comment filename
 		comment.split('_').each do |c|
 			cell = sheet.Cells.Item(celRow + c_num, 1)
-		  cell.Value = c
-		  c_num += 1
+			cell.Value = c
+			c_num += 1
 		end
 		
 		@y = ((@y /  CELL_HEIGTH).ceil + c_num - 1) * CELL_HEIGTH
@@ -76,7 +76,7 @@ class Images2Excel
 	def insert_picture(filename, sheet)
 		size = file_size(filename)
 		sheet.Shapes.AddPicture(
-			filename,
+			filename.gsub(/\//, '\\'),
 			false,
 			true,
 			1,
@@ -89,26 +89,26 @@ class Images2Excel
 	### 対象ディレクトリから画像ファイルのリストを取得する
 	def get_images_hash(dir)
 		files = Hash.new
-	  Dir.glob(File.basename(dir) + '/*') do |f|
-	    # support: bmp, gif, jpeg, pbm, pcx, pgm, png, ppm, psd, swf, tiff, xbm, xpm
-	    if /.*?\.(bmp|BMP|jpg|jpeg|png|JPG|PNG)/ =~ f
-	      if files.has_key? get_sheet_name(f) then
-	      	files[get_sheet_name(f)] << f
-	      else
-	      	files[get_sheet_name(f)] = [f]
-	      end
-	    end
-	  end
-	  files
+		Dir.glob(File.basename(dir) + '/*') do |f|
+			# support: bmp, gif, jpeg, pbm, pcx, pgm, png, ppm, psd, swf, tiff, xbm, xpm
+			if /.*?\.(bmp|BMP|jpg|jpeg|png|JPG|PNG)/ =~ f
+				if files.has_key? get_sheet_name(f) then
+					files[get_sheet_name(f)] << f
+				else
+					files[get_sheet_name(f)] = [f]
+				end
+			end
+		end
+		files
 	end
 
-  # ファイル名からシート名を取得
+	# ファイル名からシート名を取得
 	def get_sheet_name(filename)
 		basename = File.basename(filename, '.*')
 		basename.split(".")[0]
 	end
 
-  # ファイル名からコメントを取得
+	# ファイル名からコメントを取得
 	def get_comment(filename)
 		/\.\_(.*)\.?/ =~ filename
 		$1
@@ -125,13 +125,13 @@ excel = WIN32OLE.new('Excel.Application')
 begin
 	book = excel.workbooks.add
 
-  i2e = Images2Excel.new(config['scale']['width'], config['scale']['height'], config['space'])
-  i2e.convert(book, config['directory'])
+	i2e = Images2Excel.new(config['scale']['width'], config['scale']['height'], config['space'])
+	i2e.convert(book, config['img_dir'])
 
-	book.saveAs File.expand_path(config['export'])
+	book.saveAs File.expand_path(config['export']).gsub(/\//, '\\')
 	excel.Workbooks.Close
-  excel.quit
+	excel.quit
 ensure
 	excel.Workbooks.Close
-  excel.quit
+	excel.quit
 end
