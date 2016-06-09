@@ -5,7 +5,7 @@ require 'rubygems'
 require 'win32ole'
 require 'image_size'
 require 'yaml'
-
+require 'csv'
 
 
 class Images2Excel
@@ -22,7 +22,7 @@ class Images2Excel
 
   
 	def convert(book, dir)
-		files = get_images_hash(dir)
+		files = get_files_hash(dir)
 		sheetnames = files.keys.sort_by {|x| x.split("-")[0].to_i }
 		sheetnames.each do |sheetname|
 
@@ -34,7 +34,12 @@ class Images2Excel
 				sheet.Name = get_sheet_name basename
 				insert_comment(basename, sheet) if get_comment basename
 				filepath = File.expand_path(f)
-				insert_picture(filepath, sheet)
+				
+				if csv_file?(File.basename(f))
+					insert_csv(filepath, sheet)
+				else
+					insert_picture(filepath, sheet)
+				end
 			end
 		end
 	end
@@ -86,12 +91,29 @@ class Images2Excel
 		@y += size[:height] * @scale_height + @space
 	end
 
+
+	### シートに画像を挿入するメソッド.
+	def insert_csv(filename, sheet)
+		celRow = (@y /  CELL_HEIGTH).ceil
+		
+		arrs = CSV.read(filename)
+		arrs.each_with_index do |line, l_num|
+		
+			line.each_with_index do |value, index|
+				cell = sheet.Cells.Item(celRow + l_num + 1, index + 1)
+				cell.Value = value
+			end
+		end
+		
+		@y = @y + (arrs.size) * CELL_HEIGTH  + @space
+	end
+
 	### 対象ディレクトリから画像ファイルのリストを取得する
-	def get_images_hash(dir)
+	def get_files_hash(dir)
 		files = Hash.new
 		Dir.glob(File.basename(dir) + '/*') do |f|
-			# support: bmp, gif, jpeg, pbm, pcx, pgm, png, ppm, psd, swf, tiff, xbm, xpm
-			if /.*?\.(bmp|BMP|jpg|jpeg|png|JPG|PNG)/ =~ f
+			# support: bmp, gif, jpeg, png, csv
+			if /.*?\.(bmp|BMP|jpg|jpeg|JPG|png|PNG|csv|CSV)/ =~ f
 				if files.has_key? get_sheet_name(f) then
 					files[get_sheet_name(f)] << f
 				else
@@ -100,6 +122,10 @@ class Images2Excel
 			end
 		end
 		files
+	end
+	
+	def csv_file?(filename)
+		/.*?\.(csv|CSV)/ =~ filename
 	end
 
 	# ファイル名からシート名を取得

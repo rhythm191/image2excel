@@ -1,7 +1,6 @@
 # config file
 
 config:
-  # image2excel.rb‚Å—˜—p
   img_dir: "img"
   csv_dir: "img"
   export: "export.xlsx"
